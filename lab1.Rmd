@@ -1,7 +1,7 @@
 ---
 title: "Journal 1"
 #bibliography: references.bib
-author: "Your Name"
+author: "Bjarne van der Mark"
 ---
 
 
@@ -21,7 +21,7 @@ colorize <- function(x, color) {sprintf("<span style='color: %s;'>%s</span>", co
 ```
 
 ```{r klippy, echo=FALSE, include=TRUE}
-klippy::klippy(position = c('top', 'right'))
+#klippy::klippy(position = c('top', 'right'))
 #klippy::klippy(color = 'darkred')
 #klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done')
 ```
@@ -32,15 +32,32 @@ Last compiled on `r format(Sys.time(), '%B, %Y')`
 
 ----
   
-This is just an example page of your `r colorize("lab journal", "red")`.
+On this page you will find my code from the first computer lab. 
   
 
 ----
 
 
 ```{r}
-print("Hello Lab Journal")
+url1 <- "https://github.com/rensec/sasr08/raw/main/g_adj_matrix_simple.csv"
+g_matrix <- read.csv(file = url1, header = FALSE)
+g_matrix
+
+class(g_matrix)
+
+g_matrix <- as.matrix(g_matrix)
+g_matrix
+
+rownames(g_matrix) <- 1:nrow(g_matrix)
+colnames(g_matrix) <- 1:ncol(g_matrix)
+g_matrix
 ```
+Question: How many nodes are included in this matrix, and how many edges are there between these nodes?
+Answer: There are five nodes in this matrix and four edges.
+```{r}
+
+```
+
 
 
 
