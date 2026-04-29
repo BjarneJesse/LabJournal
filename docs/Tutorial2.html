@@ -349,7 +349,7 @@ div.tocify {
       <a href="lab1.html">Tutorial 1</a>
     </li>
     <li>
-      <a href="test_rmd.html">Page 2</a>
+      <a href="Tutorial2.html">Tutorial 2</a>
     </li>
   </ul>
 </li>
@@ -387,58 +387,110 @@ R</h1>
 </div>
 
 
-<pre><code>## 
-## Attaching package: &#39;igraph&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:stats&#39;:
-## 
-##     decompose, spectrum</code></pre>
-<pre><code>## The following object is masked from &#39;package:base&#39;:
-## 
-##     union</code></pre>
-<pre><code>## 
-## Attaching package: &#39;dplyr&#39;</code></pre>
-<pre><code>## The following objects are masked from &#39;package:igraph&#39;:
-## 
-##     as_data_frame, groups, union</code></pre>
-<pre><code>## The following objects are masked from &#39;package:stats&#39;:
-## 
-##     filter, lag</code></pre>
-<pre><code>## The following objects are masked from &#39;package:base&#39;:
-## 
-##     intersect, setdiff, setequal, union</code></pre>
-<pre><code>## ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
-## ✔ forcats   1.0.1     ✔ readr     2.2.0
-## ✔ ggplot2   4.0.3     ✔ stringr   1.6.0
-## ✔ lubridate 1.9.5     ✔ tibble    3.3.1
-## ✔ purrr     1.2.2     ✔ tidyr     1.3.2
-## ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
-## ✖ lubridate::%--%()       masks igraph::%--%()
-## ✖ tibble::as_data_frame() masks dplyr::as_data_frame(), igraph::as_data_frame()
-## ✖ purrr::compose()        masks igraph::compose()
-## ✖ tidyr::crossing()       masks igraph::crossing()
-## ✖ dplyr::filter()         masks stats::filter()
-## ✖ dplyr::lag()            masks stats::lag()
-## ✖ purrr::simplify()       masks igraph::simplify()
-## ℹ Use the conflicted package (&lt;http://conflicted.r-lib.org/&gt;) to force all conflicts to become errors
-## 
-## &#39;network&#39; 1.20.0 (2026-02-06), part of the Statnet Project
-## * &#39;news(package=&quot;network&quot;)&#39; for changes since last version
-## * &#39;citation(&quot;network&quot;)&#39; for citation information
-## * &#39;https://statnet.org&#39; for help, support, and other information
-## 
-## 
-## 
-## Attaching package: &#39;network&#39;
-## 
-## 
-## The following objects are masked from &#39;package:igraph&#39;:
-## 
-##     %c%, %s%, add.edges, add.vertices, delete.edges, delete.vertices,
-##     get.edge.attribute, get.edges, get.vertex.attribute, is.bipartite,
-##     is.directed, list.edge.attributes, list.vertex.attributes,
-##     set.edge.attribute, set.vertex.attribute</code></pre>
+<p>Last compiled on april, 2026</p>
+<p>On this page you will find my code from tutorial 2.</p>
+<pre class="r test"><code>library(igraph)
+z &lt;- make_graph(&quot;Zachary&quot;)
+z</code></pre>
+<pre class="test2"><code>#&gt; IGRAPH 5d6be75 U--- 34 78 -- Zachary
+#&gt; + attr: name (g/c)
+#&gt; + edges from 5d6be75:
+#&gt;  [1]  1-- 2  1-- 3  1-- 4  1-- 5  1-- 6  1-- 7  1-- 8  1-- 9  1--11  1--12  1--13  1--14  1--18
+#&gt; [14]  1--20  1--22  1--32  2-- 3  2-- 4  2-- 8  2--14  2--18  2--20  2--22  2--31  3-- 4  3-- 8
+#&gt; [27]  3--28  3--29  3--33  3--10  3-- 9  3--14  4-- 8  4--13  4--14  5-- 7  5--11  6-- 7  6--11
+#&gt; [40]  6--17  7--17  9--31  9--33  9--34 10--34 14--34 15--33 15--34 16--33 16--34 19--33 19--34
+#&gt; [53] 20--34 21--33 21--34 23--33 23--34 24--26 24--28 24--33 24--34 24--30 25--26 25--28 25--32
+#&gt; [66] 26--32 27--30 27--34 28--34 29--32 29--34 30--33 30--34 31--33 31--34 32--33 32--34 33--34</code></pre>
+<pre class="r test"><code>plot(z)</code></pre>
+<p><img src="Tutorial2_files/figure-html/unnamed-chunk-1-1.png" alt="" width="672" /></p>
+<pre class="r test"><code>is_directed(z)</code></pre>
+<pre class="test2"><code>#&gt; [1] FALSE</code></pre>
+<div id="section" class="section level2">
+<h2>2.1</h2>
+<div id="section-1" class="section level3">
+<h3>2.1.1</h3>
+<pre class="r test"><code>vcount(z)</code></pre>
+<pre class="test2"><code>#&gt; [1] 34</code></pre>
+<pre class="r test"><code>ecount(z)</code></pre>
+<pre class="test2"><code>#&gt; [1] 78</code></pre>
+</div>
+<div id="section-2" class="section level3">
+<h3>2.1.2</h3>
+<pre class="r test"><code>edge_density(z)</code></pre>
+<pre class="test2"><code>#&gt; [1] 0.1390374</code></pre>
+<p>Question: How would you calculate density using ecount() and
+vcount()?</p>
+<p>Answer: density &lt;- ecount / (vcount * (vcount - 1) / 2)</p>
+<pre class="r test"><code>z$density &lt;- edge_density(z)
+z</code></pre>
+<pre class="test2"><code>#&gt; IGRAPH 5d6be75 U--- 34 78 -- Zachary
+#&gt; + attr: name (g/c), density (g/n)
+#&gt; + edges from 5d6be75:
+#&gt;  [1]  1-- 2  1-- 3  1-- 4  1-- 5  1-- 6  1-- 7  1-- 8  1-- 9  1--11  1--12  1--13  1--14  1--18
+#&gt; [14]  1--20  1--22  1--32  2-- 3  2-- 4  2-- 8  2--14  2--18  2--20  2--22  2--31  3-- 4  3-- 8
+#&gt; [27]  3--28  3--29  3--33  3--10  3-- 9  3--14  4-- 8  4--13  4--14  5-- 7  5--11  6-- 7  6--11
+#&gt; [40]  6--17  7--17  9--31  9--33  9--34 10--34 14--34 15--33 15--34 16--33 16--34 19--33 19--34
+#&gt; [53] 20--34 21--33 21--34 23--33 23--34 24--26 24--28 24--33 24--34 24--30 25--26 25--28 25--32
+#&gt; [66] 26--32 27--30 27--34 28--34 29--32 29--34 30--33 30--34 31--33 31--34 32--33 32--34 33--34</code></pre>
+</div>
+<div id="section-3" class="section level3">
+<h3>2.1.3</h3>
+<pre class="r test"><code>count_components(z)</code></pre>
+<pre class="test2"><code>#&gt; [1] 1</code></pre>
+</div>
+<div id="section-4" class="section level3">
+<h3>2.1.4</h3>
+<pre class="r test"><code>diameter(z)</code></pre>
+<pre class="test2"><code>#&gt; [1] 5</code></pre>
+<pre class="r test"><code>mean_distance(z)</code></pre>
+<pre class="test2"><code>#&gt; [1] 2.4082</code></pre>
+</div>
+<div id="section-5" class="section level3">
+<h3>2.1.5</h3>
+<pre class="r test"><code>transitivity(z, type = &quot;average&quot;)</code></pre>
+<pre class="test2"><code>#&gt; [1] 0.5879306</code></pre>
+</div>
+</div>
+<div id="section-6" class="section level2">
+<h2>2.1</h2>
+<div id="section-7" class="section level3">
+<h3>2.2.1</h3>
+<pre class="r test"><code>degree(z)</code></pre>
+<pre class="test2"><code>#&gt;  [1] 16  9 10  6  3  4  4  4  5  2  3  1  2  5  2  2  2  2  2  3  2  2  2  5  3  3  2  4  3  4  4  6
+#&gt; [33] 12 17</code></pre>
+<pre class="r test"><code>summary(degree(z))</code></pre>
+<pre class="test2"><code>#&gt;    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+#&gt;   1.000   2.000   3.000   4.588   5.000  17.000</code></pre>
+<pre class="r test"><code>hist(degree(z))</code></pre>
+<p><img src="Tutorial2_files/figure-html/unnamed-chunk-8-1.png" alt="" width="672" /></p>
+<pre class="r test"><code>V(z)$degree &lt;- degree(z)
 
-<div id="rmd-source-code">LS0tDQp0aXRsZTogIlR1dG9yaWFsIDI6IEJhc2ljIG5ldHdvcmsgYW5hbHlzaXMgaW4gUiINCmF1dGhvcjogIkJqYXJuZSB2YW4gZGVyIE1hcmsiDQpvdXRwdXQ6DQogIGh0bWxfZG9jdW1lbnQ6DQogICAgbnVtYmVyX3NlY3Rpb25zOiBmYWxzZQ0KLS0tDQoNCmBgYHtyLCBnbG9iYWxzZXR0aW5ncywgZWNobz1GQUxTRSwgd2FybmluZz1GQUxTRSwgcmVzdWx0cz0naGlkZSd9DQpsaWJyYXJ5KGtuaXRyKQ0KbGlicmFyeShpZ3JhcGgpDQpsaWJyYXJ5KGRwbHlyKQ0KbGlicmFyeShyZXNoYXBlMikNCmxpYnJhcnkodGlkeXZlcnNlKQ0KbGlicmFyeShuZXR3b3JrKQ0KDQprbml0cjo6b3B0c19jaHVuayRzZXQoZWNobyA9IFRSVUUpDQpvcHRzX2NodW5rJHNldCh0aWR5Lm9wdHM9bGlzdCh3aWR0aC5jdXRvZmY9MTAwKSx0aWR5PVRSVUUsIHdhcm5pbmcgPSBGQUxTRSwgbWVzc2FnZSA9IEZBTFNFLGNvbW1lbnQgPSAiIz4iLCBjYWNoZT1UUlVFLCBjbGFzcy5zb3VyY2U9YygidGVzdCIpLCBjbGFzcy5vdXRwdXQ9YygidGVzdDIiKSkNCm9wdGlvbnMod2lkdGggPSAxMDApDQpyZ2w6OnNldHVwS25pdHIoKQ0KDQoNCg0KY29sb3JpemUgPC0gZnVuY3Rpb24oeCwgY29sb3IpIHtzcHJpbnRmKCI8c3BhbiBzdHlsZT0nY29sb3I6ICVzOyc+JXM8L3NwYW4+IiwgY29sb3IsIHgpIH0NCg0KYGBg</div>
+plot(z, vertex.size = V(z)$degree+8, margin= -0.1)</code></pre>
+<p><img src="Tutorial2_files/figure-html/unnamed-chunk-8-2.png" alt="" width="672" /></p>
+<pre class="r test"><code>degree(z, v = 3)</code></pre>
+<pre class="test2"><code>#&gt; [1] 10</code></pre>
+</div>
+<div id="section-8" class="section level3">
+<h3>2.2.2</h3>
+<pre class="r test"><code>betweenness(z)</code></pre>
+<pre class="test2"><code>#&gt;  [1] 231.0714286  28.4785714  75.8507937   6.2880952   0.3333333  15.8333333  15.8333333   0.0000000
+#&gt;  [9]  29.5293651   0.4476190   0.3333333   0.0000000   0.0000000  24.2158730   0.0000000   0.0000000
+#&gt; [17]   0.0000000   0.0000000   0.0000000  17.1468254   0.0000000   0.0000000   0.0000000   9.3000000
+#&gt; [25]   1.1666667   2.0277778   0.0000000  11.7920635   0.9476190   1.5428571   7.6095238  73.0095238
+#&gt; [33]  76.6904762 160.5515873</code></pre>
+<pre class="r test"><code>z &lt;- z %&gt;% 
+  set_vertex_attr(
+    name = &quot;betweenness&quot;,
+    value = betweenness(z)
+  )</code></pre>
+</div>
+<div id="section-9" class="section level3">
+<h3></h3>
+<pre class="r test"><code>V(z)$closeness &lt;- closeness(z)</code></pre>
+</div>
+</div>
+
+<div id="rmd-source-code">LS0tDQp0aXRsZTogIlR1dG9yaWFsIDI6IEJhc2ljIG5ldHdvcmsgYW5hbHlzaXMgaW4gUiINCmF1dGhvcjogIkJqYXJuZSB2YW4gZGVyIE1hcmsiDQpvdXRwdXQ6DQogIGh0bWxfZG9jdW1lbnQ6DQogICAgbnVtYmVyX3NlY3Rpb25zOiBmYWxzZQ0KLS0tDQoNCmBgYHtyLCBnbG9iYWxzZXR0aW5ncywgZWNobz1GQUxTRSwgd2FybmluZz1GQUxTRSwgcmVzdWx0cz0naGlkZScsIG1lc3NhZ2U9RkFMU0V9DQpsaWJyYXJ5KGtuaXRyKQ0KbGlicmFyeShpZ3JhcGgpDQpsaWJyYXJ5KGRwbHlyKQ0KbGlicmFyeShyZXNoYXBlMikNCmxpYnJhcnkodGlkeXZlcnNlKQ0KbGlicmFyeShuZXR3b3JrKQ0KDQprbml0cjo6b3B0c19jaHVuayRzZXQoDQogIGVjaG8gPSBUUlVFLA0KICB0aWR5Lm9wdHMgPSBsaXN0KHdpZHRoLmN1dG9mZiA9IDEwMCksDQogIHRpZHkgPSBUUlVFLA0KICB3YXJuaW5nID0gRkFMU0UsDQogIG1lc3NhZ2UgPSBGQUxTRSwNCiAgY29tbWVudCA9ICIjPiIsDQogIGNhY2hlID0gVFJVRSwNCiAgY2xhc3Muc291cmNlID0gYygidGVzdCIpLA0KICBjbGFzcy5vdXRwdXQgPSBjKCJ0ZXN0MiIpDQopDQoNCm9wdGlvbnMod2lkdGggPSAxMDApDQpyZ2w6OnNldHVwS25pdHIoKQ0KDQpjb2xvcml6ZSA8LSBmdW5jdGlvbih4LCBjb2xvcikgew0KICBzcHJpbnRmKCI8c3BhbiBzdHlsZT0nY29sb3I6ICVzOyc+JXM8L3NwYW4+IiwgY29sb3IsIHgpDQp9DQpgYGANCg0KYGBge3Iga2xpcHB5LCBlY2hvPUZBTFNFLCBpbmNsdWRlPVRSVUV9DQojIGtsaXBweTo6a2xpcHB5KHBvc2l0aW9uID0gYygndG9wJywgJ3JpZ2h0JykpDQojIGtsaXBweTo6a2xpcHB5KGNvbG9yID0gJ2RhcmtyZWQnKQ0KIyBrbGlwcHk6OmtsaXBweSh0b29sdGlwX21lc3NhZ2UgPSAnQ2xpY2sgdG8gY29weScsIHRvb2x0aXBfc3VjY2VzcyA9ICdEb25lJykNCmBgYA0KDQpMYXN0IGNvbXBpbGVkIG9uIGByIGZvcm1hdChTeXMudGltZSgpLCAnJUIsICVZJylgDQoNCk9uIHRoaXMgcGFnZSB5b3Ugd2lsbCBmaW5kIG15IGNvZGUgZnJvbSB0dXRvcmlhbCAyLg0KDQpgYGB7cn0NCmxpYnJhcnkoaWdyYXBoKQ0KeiA8LSBtYWtlX2dyYXBoKCJaYWNoYXJ5IikNCnoNCg0KcGxvdCh6KQ0KDQppc19kaXJlY3RlZCh6KQ0KYGBgDQoNCiMjIDIuMQ0KIyMjIDIuMS4xDQoNCmBgYHtyfQ0KdmNvdW50KHopDQplY291bnQoeikNCmBgYA0KDQojIyMgMi4xLjINCg0KYGBge3J9DQplZGdlX2RlbnNpdHkoeikNCmBgYA0KDQpRdWVzdGlvbjogSG93IHdvdWxkIHlvdSBjYWxjdWxhdGUgZGVuc2l0eSB1c2luZyBlY291bnQoKSBhbmQgdmNvdW50KCk/DQoNCkFuc3dlcjogZGVuc2l0eSA8LSBlY291bnQgLyAodmNvdW50ICogKHZjb3VudCAtIDEpIC8gMikNCg0KYGBge3J9DQp6JGRlbnNpdHkgPC0gZWRnZV9kZW5zaXR5KHopDQp6DQpgYGANCg0KIyMjIDIuMS4zDQoNCmBgYHtyfQ0KY291bnRfY29tcG9uZW50cyh6KQ0KYGBgDQoNCiMjIyAyLjEuNA0KDQpgYGB7cn0NCmRpYW1ldGVyKHopDQoNCm1lYW5fZGlzdGFuY2UoeikNCmBgYA0KDQojIyMgMi4xLjUNCg0KYGBge3J9DQp0cmFuc2l0aXZpdHkoeiwgdHlwZSA9ICJhdmVyYWdlIikNCmBgYA0KDQojIyAyLjENCiMjIyAyLjIuMQ0KDQpgYGB7cn0NCmRlZ3JlZSh6KQ0KDQpzdW1tYXJ5KGRlZ3JlZSh6KSkNCg0KaGlzdChkZWdyZWUoeikpDQoNClYoeikkZGVncmVlIDwtIGRlZ3JlZSh6KQ0KDQpwbG90KHosIHZlcnRleC5zaXplID0gVih6KSRkZWdyZWUrOCwgbWFyZ2luPSAtMC4xKQ0KDQpkZWdyZWUoeiwgdiA9IDMpDQoNCmBgYA0KDQojIyMgMi4yLjINCg0KYGBge3J9DQpiZXR3ZWVubmVzcyh6KQ0KDQp6IDwtIHogJT4lIA0KICBzZXRfdmVydGV4X2F0dHIoDQogICAgbmFtZSA9ICJiZXR3ZWVubmVzcyIsDQogICAgdmFsdWUgPSBiZXR3ZWVubmVzcyh6KQ0KICApDQpgYGANCg0KIyMjDQoNCmBgYHtyfQ0KVih6KSRjbG9zZW5lc3MgPC0gY2xvc2VuZXNzKHopDQpgYGANCg0K</div>
 
 
 </div>
