@@ -1,42 +1,51 @@
 ---
-title: "Journal 1"
-#bibliography: references.bib
+title: "Tutorial 1: Handling social network data in R"
 author: "Bjarne van der Mark"
+output:
+  html_document:
+    number_sections: false
 ---
 
-
-
-```{r, globalsettings, echo=FALSE, warning=FALSE, results='hide'}
+```{r, globalsettings, echo=FALSE, warning=FALSE, results='hide', message=FALSE}
 library(knitr)
+library(igraph)
+library(dplyr)
+library(reshape2)
+library(tidyverse)
+library(network)
 
-knitr::opts_chunk$set(echo = TRUE)
-opts_chunk$set(tidy.opts=list(width.cutoff=100),tidy=TRUE, warning = FALSE, message = FALSE,comment = "#>", cache=TRUE, class.source=c("test"), class.output=c("test2"))
+knitr::opts_chunk$set(
+  echo = TRUE,
+  tidy.opts = list(width.cutoff = 100),
+  tidy = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  comment = "#>",
+  cache = TRUE,
+  class.source = c("test"),
+  class.output = c("test2")
+)
+
 options(width = 100)
 rgl::setupKnitr()
 
-
-
-colorize <- function(x, color) {sprintf("<span style='color: %s;'>%s</span>", color, x) }
-
+colorize <- function(x, color) {
+  sprintf("<span style='color: %s;'>%s</span>", color, x)
+}
 ```
 
 ```{r klippy, echo=FALSE, include=TRUE}
-#klippy::klippy(position = c('top', 'right'))
-#klippy::klippy(color = 'darkred')
-#klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done')
+# klippy::klippy(position = c('top', 'right'))
+# klippy::klippy(color = 'darkred')
+# klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done')
 ```
 
 Last compiled on `r format(Sys.time(), '%B, %Y')`
 
-<br>
+On this page you will find my code from tutorial 1.
 
-----
-  
-On this page you will find my code from the first computer lab. 
-  
-
-----
-
+## 1.1
+### 1.1.1
 
 ```{r}
 url1 <- "https://github.com/rensec/sasr08/raw/main/g_adj_matrix_simple.csv"
@@ -52,12 +61,208 @@ rownames(g_matrix) <- 1:nrow(g_matrix)
 colnames(g_matrix) <- 1:ncol(g_matrix)
 g_matrix
 ```
-Question: How many nodes are included in this matrix, and how many edges are there between these nodes?
-Answer: There are five nodes in this matrix and four edges.
-```{r}
 
+Question: How many nodes are included in this matrix, and how many edges are there between these nodes?
+
+Answer: There are five nodes in this matrix and four edges.
+
+```{r}
+g_nodes_age <- read.csv(file = "https://github.com/rensec/sasr08/raw/main/g_nodes_age.csv")
+g_nodes_age
+
+g <- graph_from_adjacency_matrix(g_matrix)
+class(g)
+g
+
+plot(g)
+
+g <- set_vertex_attr(
+  g,
+  name = "age",
+  value = g_nodes_age$age
+)
 ```
 
+### 1.1.2
 
+```{r}
+g_elist <- read.csv(file = "https://github.com/rensec/sasr08/raw/main/g_elist.csv")
+g_elist
 
+g_from_elist <- graph_from_data_frame(g_elist)
+plot(g_from_elist)
 
+g_from_elist <- graph_from_data_frame(g_elist, vertices = g_nodes_age)
+plot(g_from_elist)
+```
+
+### Assignment: Edge list pipeline
+
+From the code snippets above, construct a complete pipeline to go from the edge list to the igraph object. Start from `g_elist`. Plot the resulting network. Store the code somewhere for later use.
+
+```{r}
+g_from_elist <- graph_from_data_frame(
+  d = g_elist,
+  vertices = g_nodes_age
+)
+
+plot(g_from_elist)
+```
+
+### 1.1.3
+
+```{r}
+g_adj_list <- read.csv(file = "https://github.com/rensec/sasr08/raw/main/g_adj_list.csv")
+g_adj_list
+
+g_elist_from_alist <- g_adj_list
+
+g_elist_from_alist <- g_adj_list %>%
+  select(id, friend1:friend2) %>%
+  melt(id.vars = "id")
+
+g_adj_list %>%
+  select(id, friend1:friend2) %>%
+  pivot_longer(c(friend1, friend2))
+
+g_elist_from_alist <- g_elist_from_alist %>%
+  filter(!is.na(value)) %>%
+  rename(from = "id", to = "value", sourcevar = "variable") %>%
+  relocate(to, .after = from)
+
+g_elist_from_alist
+```
+
+Question: Besides being useful for data manipulation procedures, keeping the information in `sourcevar` could also be important for more substantive reasons. Can you think of such a reason?
+
+Answer: Seeing who is a more important friend.
+
+```{r}
+g_from_alist <- graph_from_data_frame(g_elist_from_alist)
+plot(g_from_alist)
+
+nodelist <- select(g_adj_list, id, age)
+
+g_from_alist <- graph_from_data_frame(
+  g_elist_from_alist,
+  vertices = nodelist
+)
+
+plot(g_from_alist)
+```
+
+### Assignment: Adjacency list pipeline
+
+From the code snippets above, construct a complete pipeline to go from the adjacency list to the igraph object. Start from `g_adj_list`. Plot the resulting network. Store the code for later use.
+
+```{r}
+g_from_alist <- graph_from_data_frame(
+  d = g_adj_list %>%
+    select(id, friend1:friend2) %>%
+    pivot_longer(c(friend1, friend2)) %>%
+    filter(!is.na(value)) %>%
+    rename(from = id, to = value, sourcevar = name) %>%
+    relocate(to, .after = from),
+  
+  vertices = g_adj_list %>%
+    select(id, age),
+  
+  directed = TRUE
+)
+
+plot(g_from_alist)
+```
+
+## 1.2
+### 1.2.1
+
+```{r}
+g_adj_matrix <- as_adjacency_matrix(g, sparse = FALSE)
+g_adj_matrix
+
+all(g_adj_matrix == g_matrix)
+```
+
+### 1.2.2
+
+```{r}
+g_edgelist <- igraph::as_data_frame(g_from_elist, what = "edges")
+g_edgelist
+
+igraph::as_data_frame(g_from_elist, what = "vertices")
+```
+
+### 1.2.3
+
+```{r}
+edgelist_2 <- igraph::as_data_frame(g_from_alist, what = "edges")
+nodelist_2 <- igraph::as_data_frame(g_from_alist, what = "vertices")
+
+d <- edgelist_2 %>%
+  rename(id = "from") %>%
+  pivot_wider(
+    id_cols = id,
+    names_from = sourcevar,
+    values_from = to
+  ) %>%
+  merge(nodelist_2, by.x = "id", by.y = "name", all.y = TRUE) %>%
+  relocate(age, .after = id) %>%
+  type_convert()
+
+d
+```
+
+## 1.3
+
+```{r}
+g_np <- as.network(
+  g_elist_from_alist,
+  matrix.type = "edgelist",
+  vertices = nodelist
+)
+
+g_np
+
+plot(g_np)
+```
+
+## 1.4
+
+```{r}
+g_mod <- delete_vertices(g, 2)
+plot(g_mod)
+
+g_mod <- delete_vertices(g, which(V(g)$age == 21))
+plot(g_mod)
+```
+
+### Question
+
+Write the code to remove all nodes from `g` for which age is missing.
+
+```{r}
+g_mod <- delete_vertices(g, which(is.na(V(g)$age)))
+```
+
+```{r}
+V(g)$gender <- c("male", "female", "female", "other", "male")
+g
+
+g_rev <- reverse_edges(g)
+plot(g_rev)
+
+g_union <- igraph::union(g, g_rev)
+```
+
+Question: Before you run `plot(g_union)`, think about what the resulting network should look like. Thus, what could you use the combination of `reverse_edges()` and `union()` for?
+
+Answer: You can use this to make the network undirected.
+
+```{r}
+g_undir <- as_undirected(g)
+plot(g_undir)
+```
+
+Question: Realize however that, conceptually, `g_union` and `g_undir` are different. What is the difference?
+
+Answer: `g_union` goes both directions and `g_undir` has no directions.
