@@ -1,0 +1,171 @@
+---
+title: "Tutorial 3: Introducing the Knecht data"
+author: "Bjarne van der Mark"
+output:
+  html_document:
+    number_sections: false
+---
+
+```{r, globalsettings, echo=FALSE, warning=FALSE, results='hide', message=FALSE}
+library(knitr)
+library(igraph)
+library(dplyr)
+library(reshape2)
+library(tidyverse)
+library(network)
+library(haven)
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  tidy.opts = list(width.cutoff = 100),
+  tidy = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  comment = "#>",
+  cache = TRUE,
+  class.source = c("test"),
+  class.output = c("test2")
+)
+
+options(width = 100)
+rgl::setupKnitr()
+
+colorize <- function(x, color) {
+  sprintf("<span style='color: %s;'>%s</span>", color, x)
+}
+```
+
+```{r klippy, echo=FALSE, include=TRUE}
+# klippy::klippy(position = c('top', 'right'))
+# klippy::klippy(color = 'darkred')
+# klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done')
+```
+
+Last compiled on `r format(Sys.time(), '%B, %Y')`
+
+On this page you will find my code from tutorial 3.
+
+## 3.1
+
+```{r}
+PupilsWaveV <- read_dta(file = "PupilsWaveV.dta")
+class12b <- PupilsWaveV %>% 
+  filter(schoolnr == "12b")  # keep only one class
+```
+
+### Assignment 
+
+#### 1. 
+```{r}
+class12b_igraph <- graph_from_data_frame(
+  d = class12b %>%
+    select(namenr, age, sex, friend1:friend12) %>%
+    pivot_longer(
+      cols = friend1:friend12,
+      names_to = "sourcevar",
+      values_to = "to"
+    ) %>%
+    filter(!is.na(to)) %>%
+    rename(from = namenr) %>%
+    relocate(to, .after = from),
+  
+  vertices = class12b %>%
+    select(namenr, age, sex),
+  
+  directed = TRUE
+)
+
+```
+
+#### 2. 
+
+given the data collection this shoud be a directed network. 
+
+```{r}
+is_directed(class12b_igraph)
+```
+
+#### 3. 
+
+```{r}
+set.seed(123)
+
+plot(
+  class12b_igraph,
+  layout = layout_with_fr(class12b_igraph),
+  vertex.label = NA,
+  vertex.size = 6,
+  vertex.color = "lightblue",
+  vertex.frame.color = "grey40",
+  edge.arrow.size = 0.15,
+  edge.width = 0.6,
+  edge.color = "grey70",
+  edge.curved = 0.15,
+  main = "Friendship network class 12b"
+)
+```
+
+#### 4. 
+
+```{r}
+vcount(class12b_igraph)
+ecount(class12b_igraph)
+edge_density(class12b_igraph)
+count_components(class12b_igraph)
+diameter(class12b_igraph)
+mean_distance(class12b_igraph)
+transitivity(class12b_igraph, type = "average")
+```
+
+#### 5. 
+
+```{r}
+node_data <- data.frame(
+  namenr = V(class12b_igraph)$name,
+  sex = V(class12b_igraph)$sex,
+  degree = degree(class12b_igraph, mode = "all")
+)
+
+t.test(degree ~ sex, data = node_data)
+```
+
+#### 6. 
+
+```{r}
+V(class12b_igraph)$degree <- degree(class12b_igraph, mode = "all")
+
+V(class12b_igraph)$color <- ifelse(
+  V(class12b_igraph)$sex == 1,
+  "lightblue",
+  "pink"
+)
+
+set.seed(123)
+
+plot(
+  class12b_igraph,
+  layout = layout_with_fr(class12b_igraph),
+  vertex.size = V(class12b_igraph)$degree + 8,
+  vertex.color = V(class12b_igraph)$color,
+  vertex.label = NA,
+  edge.arrow.size = 0.15,
+  edge.width = 0.6,
+  edge.color = "grey70",
+  edge.curved = 0.15,
+  margin = -0.1,
+  main = "Friendship network class 12b"
+)
+
+legend(
+  "topright",
+  legend = c("Sex 1", "Sex 2"),
+  col = c("lightblue", "pink"),
+  pch = 19,
+  pt.cex = 1.5,
+  bty = "n"
+)
+```
+
+
+
+
