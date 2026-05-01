@@ -45,7 +45,6 @@ Last compiled on `r format(Sys.time(), '%B, %Y')`
 On this page you will find my code from tutorial 2.
 
 ```{r}
-library(igraph)
 z <- make_graph("Zachary")
 z
 

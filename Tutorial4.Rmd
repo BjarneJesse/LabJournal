@@ -1,0 +1,156 @@
+---
+title: "Tutorial 4: Networks as causes: Spatial regression analysis
+"
+author: "Bjarne van der Mark"
+output:
+  html_document:
+    number_sections: false
+---
+
+```{r, globalsettings, echo=FALSE, warning=FALSE, results='hide', message=FALSE}
+library(knitr)
+library(igraph)
+library(dplyr)
+library(reshape2)
+library(tidyverse)
+library(network)
+library(spdep)
+library(spatialreg)
+
+knitr::opts_chunk$set(
+  echo = TRUE,
+  tidy.opts = list(width.cutoff = 100),
+  tidy = TRUE,
+  warning = FALSE,
+  message = FALSE,
+  comment = "#>",
+  cache = TRUE,
+  class.source = c("test"),
+  class.output = c("test2")
+)
+
+options(width = 100)
+rgl::setupKnitr()
+
+colorize <- function(x, color) {
+  sprintf("<span style='color: %s;'>%s</span>", color, x)
+}
+```
+
+```{r klippy, echo=FALSE, include=TRUE}
+# klippy::klippy(position = c('top', 'right'))
+# klippy::klippy(color = 'darkred')
+# klippy::klippy(tooltip_message = 'Click to copy', tooltip_success = 'Done')
+```
+
+Last compiled on `r format(Sys.time(), '%B, %Y')`
+
+On this page you will find my code from tutorial 4.
+
+## 4.1 
+
+```{r}
+data(columbus)
+mydata <- columbus
+
+attach(mydata)
+
+neighbors <- col.gal.nb
+
+class(neighbors)
+
+listw <- nb2listw(neighbors, style = "W")
+summary(listw)
+```
+
+## 4.2
+
+```{r}
+summary(CRIME)
+summary(INC)
+summary(HOVAL)
+plot(neighbors, coords)
+
+olsreg <- lm(CRIME ~ INC + HOVAL)
+summary(olsreg)
+```
+
+## 4.3
+
+### 4.3.1 
+
+```{r}
+moran.test(CRIME, listw)
+```
+
+### 4.3.2
+
+```{r}
+lm.LMtests(olsreg, listw, test=c("LMlag", "LMerr"))
+```
+
+### 4.3.3
+
+```{r}
+slm <- lagsarlm(CRIME ~ INC + HOVAL, data = mydata, listw, Durbin = "FALSE")
+summary(slm)
+
+im<-impacts(slm, listw = listw, zstats=TRUE, R=200)
+sums<-summary(im,  zstats=T)
+data.frame(sums$res)
+
+data.frame(sums$pzmat)
+```
+
+### 4.3.4
+
+```{r}
+sem <- errorsarlm(CRIME ~ INC + HOVAL, data = mydata, listw, Durbin = FALSE)
+summary(sem)
+```
+
+### 4.3.5
+
+```{r}
+sac <- sacsarlm(CRIME ~ INC + HOVAL, data = mydata, listw, Durbin = FALSE)
+summary(sac)
+```
+
+### 4.3.6
+
+```{r}
+sdm <- lagsarlm(CRIME ~ INC + HOVAL, data = mydata, listw, Durbin = TRUE)
+summary(sdm)
+```
+
+### 4.3.7 
+
+```{r}
+sdem <- errorsarlm(CRIME ~ INC + HOVAL, data = mydata, listw, Durbin = TRUE)
+summary(sdem)
+```
+
+### 4.3.8
+
+```{r}
+gnm <- sacsarlm(CRIME ~ INC + HOVAL, data = mydata, listw, Durbin = TRUE)
+summary(gnm)
+```
+
+## 4.4
+
+#### 1.
+
+```{r}
+PupilsWaveV <- PupilsWaveV %>%
+  mutate(
+    acthomew = na_if(acthomew, 9),
+    acthomew_rev = 6 - acthomew,
+    female = ifelse(sex == 1, 1, 0)
+  )
+
+linear_model <- lm(acthomew_rev ~ female + age, data = PupilsWaveV)
+
+summary(linear_model)
+```
+

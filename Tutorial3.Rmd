@@ -126,7 +126,10 @@ node_data <- data.frame(
   degree = degree(class12b_igraph, mode = "all")
 )
 
-t.test(degree ~ sex, data = node_data)
+t.test(degree ~ sex, alternative = "less", 
+       conf.level = .95, 
+       var.equal = TRUE, 
+       data = node_data)
 ```
 
 #### 6. 
