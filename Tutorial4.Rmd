@@ -16,6 +16,9 @@ library(tidyverse)
 library(network)
 library(spdep)
 library(spatialreg)
+library(lme4)
+library(Matrix)
+library(haven)
 
 knitr::opts_chunk$set(
   echo = TRUE,
@@ -139,11 +142,13 @@ summary(gnm)
 
 ## 4.4
 
-#### 1.
+#### 1 & 2
 
 ```{r}
-PupilsWaveV <- PupilsWaveV %>%
+PupilsWaveV <- read_dta("PupilsWaveV.dta") %>%
   mutate(
+    acthomew = as.numeric(zap_labels(acthomew)),
+    sex = as.numeric(zap_labels(sex)),
     acthomew = na_if(acthomew, 9),
     acthomew_rev = 6 - acthomew,
     female = ifelse(sex == 1, 1, 0)
@@ -154,3 +159,138 @@ linear_model <- lm(acthomew_rev ~ female + age, data = PupilsWaveV)
 summary(linear_model)
 ```
 
+#### 3. 
+
+```{r}
+multi_model <- lmer(acthomew_rev ~ female + age + (1 | schoolnr), data = PupilsWaveV)
+summary(multi_model)
+```
+
+#### 4. 
+
+```{r}
+PupilsWaveV <- read_dta(file = "PupilsWaveV.dta")
+class12b <- PupilsWaveV %>% 
+  filter(schoolnr == "12b")  # keep only one class
+
+class12b <- class12b %>%
+  mutate(
+    acthomew = as.numeric(zap_labels(acthomew)),
+    acthomew = na_if(acthomew, 9),
+    acthomew_rev = 6 - acthomew,
+    sex = as.numeric(zap_labels(sex)),
+    female = ifelse(sex == 1, 1, 0)
+  )
+
+class12b_igraph <- graph_from_data_frame(
+  d = class12b %>%
+    select(namenr, age, sex, friend1:friend12) %>%
+    pivot_longer(
+      cols = friend1:friend12,
+      names_to = "sourcevar",
+      values_to = "to"
+    ) %>%
+    filter(!is.na(to)) %>%
+    rename(from = namenr) %>%
+    relocate(to, .after = from),
+  
+  vertices = class12b %>%
+    select(namenr, age, sex),
+  
+  directed = TRUE
+)
+
+
+
+
+class12b_adj_matrix <- as_adjacency_matrix(class12b_igraph, sparse = FALSE)
+
+```
+
+#### 5. 
+
+```{r}
+class12b_adj_matrix <- as.matrix(class12b_adj_matrix)
+
+listw_class12b <- mat2listw(
+  class12b_adj_matrix,
+  style = "W",
+  zero.policy = TRUE
+)
+
+listw_class12b
+```
+
+#### 6. 
+
+```{r}
+moran.test(
+  class12b$acthomew_rev,
+  listw_class12b,
+  zero.policy = TRUE,
+  na.action = na.omit
+)
+
+
+ols_reg <- lm(acthomew_rev ~ female + age, data = class12b)
+
+lm.LMtests(
+  ols_reg,
+  listw_class12b,
+  test = c("LMlag", "LMerr"),
+  zero.policy = TRUE
+)
+
+```
+
+#### 7
+
+```{r}
+slm <- lagsarlm(acthomew_rev ~ female + age, data = class12b, listw_class12b, Durbin = "FALSE", zero.policy = TRUE)
+summary(slm)
+
+im<-impacts(slm, listw = listw_class12b, zstats=TRUE, R=200)
+sums<-summary(im,  zstats=T)
+data.frame(sums$res)
+data.frame(sums$pzmat)
+
+#The impact estimates do not show significant direct, indirect, or total effects of gender or age on homework behavior.
+```
+
+#### 8
+
+```{r}
+sem <- errorsarlm(acthomew_rev ~ female + age, data = class12b, listw_class12b, Durbin = "FALSE", zero.policy = TRUE)
+summary(sem)
+
+#There are no significant effects of gender or age. Lambda is negative and significant, indicating significant negative spatial dependence in the error term.
+
+sac <- sacsarlm(acthomew_rev ~ female + age, data = class12b, listw_class12b, Durbin = "FALSE", zero.policy = TRUE)
+summary(sac)
+
+#There is again no significant effect of gender or age. Both Rho and Lamba are insignificant.
+#The LR test is significant this suggests that the SAC model improves model fit compared to OLS
+```
+
+#### 9
+
+```{r}
+sdm <- lagsarlm(acthomew_rev ~ female + age, data = class12b, listw_class12b, Durbin = TRUE, zero.policy = TRUE)
+summary(sdm)
+
+#In the SDM, gender, age, lagged gender, and lagged age were not significant. However, rho was negative and significant, rho = -0.679, p < .001. This indicates negative spatial lag dependence. The model improved fit compared to OLS, LR test p = .034.
+
+sdem <- errorsarlm(acthomew_rev ~ female + age, data = class12b, listw_class12b, Durbin = TRUE, zero.policy = TRUE)
+summary(sdem)
+
+#In the SDEM, gender, age, lagged gender, and lagged age were not significant at the .05 level. Lagged age was close to significant, p = .066. Lambda was negative and significant, lambda = -0.771, p < .001. This indicates negative spatial dependence in the error term. The model also improved fit compared to OLS, LR test p = .029.
+
+gnm <- sacsarlm(acthomew_rev ~ female + age, data = class12b, listw_class12b, Durbin = TRUE, zero.policy = TRUE)
+summary(gnm)
+
+#In the GNM, none of the predictors, lagged predictors, rho, or lambda were significant. The LR test was also not significant at the .05 level, p = .072. This means the general nested model does not clearly improve the model.
+```
+
+#### 10
+
+There is some evidence of network dependence in homework behavior, but this dependence is negative and not consistent across all models. Gender and age do not appear to be strong predictors of homework behavior in Class 12b.
